@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PAUSE</title>
+  <meta name="description" content="지금 할 일 하나만 하세요." />
+  <style>
+    :root{
+      --bg:#ffffff;
+      --fg:#111111;
+      --muted:#6b7280;
+      --card:#f3f4f6;
+      --shadow: 0 18px 40px rgba(0,0,0,.12);
+      --shadow2: 0 10px 22px rgba(0,0,0,.10);
+      --red:#e11d48;
+      --ring:#d1d5db;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--bg);
+      color:var(--fg);
+      font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    }
+    .wrap{
+      width:min(520px, 92vw);
+      padding:28px 18px 34px;
+    }
+    .brand{
+      letter-spacing:.12em;
+      font-size:12px;
+      color:var(--muted);
+      text-align:center;
+      margin-bottom:14px;
+      user-select:none;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid #e5e7eb;
+      border-radius:24px;
+      padding:26px 22px 22px;
+      box-shadow: var(--shadow2);
+    }
+    .title{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:18px;
+    }
+    .title h1{
+      margin:0;
+      font-size:22px;
+      letter-spacing:.08em;
+    }
+    .title span{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* Keycap button (mechanical keyboard 느낌) */
+    .keycap-area{
+      display:flex;
+      justify-content:center;
+      padding:18px 0 14px;
+    }
+    .keycap{
+      position:relative;
+      width:140px;
+      height:140px;
+      border-radius:18px;
+      background:linear-gradient(#fafafa, #e5e7eb);
+      border:1px solid var(--ring);
+      box-shadow: var(--shadow);
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transform: translateY(0);
+      transition: transform .08s ease, box-shadow .08s ease;
+    }
+    .keycap:active{
+      transform: translateY(4px);
+      box-shadow: 0 10px 22px rgba(0,0,0,.12);
+    }
+    .keycap .top{
+      position:absolute;
+      inset:10px;
+      border-radius:14px;
+      background:linear-gradient(#ffffff, #f3f4f6);
+      border:1px solid #e5e7eb;
+    }
+    .keycap .label{
+      position:relative;
+      z-index:2;
+      width:88px;
+      height:88px;
+      border-radius:14px;
+      background:linear-gradient(#fb7185, var(--red));
+      border:1px solid rgba(0,0,0,.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-weight:700;
+      letter-spacing:.14em;
+      font-size:14px;
+      box-shadow: 0 10px 16px rgba(225,29,72,.22);
+    }
+    .keycap .label::after{
+      /* 작은 하이라이트 */
+      content:"";
+      position:absolute;
+      top:10px; left:12px;
+      width:36px; height:10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.55);
+      filter: blur(.2px);
+    }
+
+    .message{
+      text-align:center;
+      font-size:18px;
+      line-height:1.5;
+      margin:10px 0 2px;
+      font-weight:600;
+    }
+    .sub{
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      margin:0 0 2px;
+    }
+
+    .toast{
+      margin-top:14px;
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius:14px;
+      padding:12px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .toast .t{
+      font-size:13px;
+      color:#111;
+    }
+    .toast button{
+      border:1px solid #e5e7eb;
+      background:#fff;
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:12px;
+      cursor:pointer;
+    }
+    .toast button:active{ transform: translateY(1px); }
+    .foot{
+      margin-top:12px;
+      text-align:center;
+      font-size:11px;
+      color:var(--muted);
+      user-select:none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">TAP TO PAUSE</div>
+
+    <div class="card">
+      <div class="title">
+        <h1>PAUSE</h1>
+        <span>NFC keyring</span>
+      </div>
+
+      <div class="keycap-area">
+        <div class="keycap" id="keycap" role="button" aria-label="Pause 버튼" tabindex="0">
+          <div class="top"></div>
+          <div class="label">PAUSE</div>
+        </div>
+      </div>
+
+      <p class="message" id="msg">지금 할 일 하나만 하세요.</p>
+      <p class="sub">변화 없음이 컨셉입니다.</p>
+
+      <div class="toast">
+        <div class="t" id="toastText">원하면 이 문장을 복사해요.</div>
+        <button id="copyBtn" type="button">복사</button>
+      </div>
+
+      <div class="foot">Press the key. Then do one thing.</div>
+    </div>
+  </div>
+
+  <script>
+    const TEXT = "지금 할 일 하나만 하세요.";
+    const keycap = document.getElementById("keycap");
+    const copyBtn = document.getElementById("copyBtn");
+    const toastText = document.getElementById("toastText");
+
+    function pressFeedback(){
+      // 살짝 햅틱 느낌(모바일 일부 지원)
+      if (navigator.vibrate) navigator.vibrate(15);
+      toastText.textContent = "멈춤.";
+      setTimeout(()=> toastText.textContent = "원하면 이 문장을 복사해요.", 900);
+    }
+
+    keycap.addEventListener("click", pressFeedback);
+    keycap.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter" || e.key === " "){
+        e.preventDefault();
+        pressFeedback();
+      }
+    });
+
+    copyBtn.addEventListener("click", async ()=>{
+      try{
+        await navigator.clipboard.writeText(TEXT);
+        toastText.textContent = "복사됨.";
+        setTimeout(()=> toastText.textContent = "원하면 이 문장을 복사해요.", 900);
+      }catch(e){
+        // fallback
+        const ta = document.createElement("textarea");
+        ta.value = TEXT;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+        toastText.textContent = "복사됨.";
+        setTimeout(()=> toastText.textContent = "원하면 이 문장을 복사해요.", 900);
+      }
+    });
+  </script>
+</body>
+</html>

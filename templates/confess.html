@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>속마음 올리기 - 무릇</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>🪷 당신의 속마음은 연꽃 위에 놓입니다</h2>
+    <p>부처님은 조용히, 고요하게 귀 기울이고 계십니다.<br>
+    괴로움도 지나가리니, 이제 마음을 놓아보세요.</p>
+    
+    <form action="/confess" method="POST">
+        <textarea name="confession" placeholder="마음을 글로 옮겨보세요..."></textarea>
+        <button type="submit">연꽃 위에 올리기</button>
+    </form>
+</body>
+</html>

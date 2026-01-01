@@ -1,0 +1,10 @@
+.env
+.env
+.env.*
+*.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+demucs-venv/
+.DS_Store
