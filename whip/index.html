@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WHIP</title>
+  <meta name="theme-color" content="#F6F2EA" />
+  <style>
+    :root{
+      --bg:#F6F2EA;      /* ivory */
+      --fg:#121212;
+      --line: rgba(18,18,18,.12);
+      --shadow: 0 18px 50px rgba(0,0,0,.10);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      padding: 24px 16px;
+    }
+    .wrap{
+      width:min(520px, 96vw);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 18px;
+    }
+
+    /* --- Screen 1: whip only --- */
+    .whipScreen{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+    }
+    .whipBtn{
+      border:none;
+      background: transparent;
+      padding:0;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+      transform: translateY(0);
+      transition: transform .08s ease;
+    }
+    .whipBtn:active{ transform: translateY(2px); }
+    .whipImg{
+      width: min(320px, 82vw);
+      height: auto;
+      display:block;
+      filter: drop-shadow(0 18px 22px rgba(0,0,0,.12));
+    }
+
+    /* --- Screen 2: quote + button only --- */
+    .quoteScreen{
+      display:none; /* hidden until hit */
+      width:100%;
+      flex-direction:column;
+      align-items:center;
+      gap: 12px;
+      animation: fadeUp .18s ease-out forwards;
+    }
+    @keyframes fadeUp{
+      from{ opacity:0; transform: translateY(8px); }
+      to{ opacity:1; transform: translateY(0); }
+    }
+    .quote{
+      width:100%;
+      text-align:center;
+      font-size: 20px;
+      line-height: 1.6;
+      font-weight: 800;
+      letter-spacing: -.01em;
+      min-height: 96px;
+      padding: 0 10px;
+    }
+    .btn{
+      width: 180px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: 0 12px 26px rgba(0,0,0,.08);
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform .08s ease;
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .pop{ animation: pop .12s ease-out; }
+    @keyframes pop{
+      from{ transform: scale(.99); opacity:.6; }
+      to{ transform: scale(1); opacity:1; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <!-- SCREEN 1: whip only -->
+    <div class="whipScreen" id="whipScreen">
+      <button class="whipBtn" id="whipBtn" aria-label="채찍">
+        <img class="whipImg" src="assets/whip.png" alt="whip" />
+      </button>
+    </div>
+
+    <!-- SCREEN 2: quote + one button -->
+    <div class="quoteScreen" id="quoteScreen">
+      <div class="quote" id="quote"></div>
+      <button class="btn" id="moreBtn" type="button">한대 더</button>
+    </div>
+  </div>
+
+  <script>
+    const QUOTES = [
+      "지금 안 하면, 그냥 안 하는 사람이야.",
+      "완벽 기다리지 말고, 10분만 시작해.",
+      "핑계는 네 하루를 먹는다. 끊어.",
+      "기분 말고 약속으로 움직여.",
+      "미루는 순간, 내일이 더 무거워진다.",
+      "딱 하나만 끝내. 그게 오늘을 바꿔.",
+      "할 수 있냐고? 해. 지금.",
+      "생각은 충분해. 몸이 움직일 차례야.",
+      "‘나중에’는 거의 항상 ‘안 함’이다.",
+      "지금 시작하면 오늘이 달라진다."
+    ];
+
+    const whipScreen = document.getElementById("whipScreen");
+    const quoteScreen = document.getElementById("quoteScreen");
+    const whipBtn = document.getElementById("whipBtn");
+    const moreBtn = document.getElementById("moreBtn");
+    const quoteEl = document.getElementById("quote");
+
+    function randQuote(){
+      return QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    }
+
+    // mp3 paths
+    const whipSound = new Audio("assets/whip.mp3");
+    const horseSound = new Audio("assets/horse.mp3");
+    whipSound.preload = "auto";
+    horseSound.preload = "auto";
+    whipSound.volume = 1.0;
+    horseSound.volume = 0.9;
+
+    async function playSequence(){
+      try { whipSound.pause(); whipSound.currentTime = 0; } catch(e) {}
+      try { horseSound.pause(); horseSound.currentTime = 0; } catch(e) {}
+
+      // iOS: click handler 안에서 play()해야 함
+      try { await whipSound.play(); } catch(e) {}
+
+      // whip 다음 horse
+      setTimeout(() => {
+        try { horseSound.currentTime = 0; horseSound.play(); } catch(e) {}
+      }, 120);
+    }
+
+    // 화면 전환: 채찍 -> 문장
+    async function hitWhip(){
+      if (navigator.vibrate) navigator.vibrate([12, 30, 12]);
+
+      await playSequence();
+
+      // 문장 세팅
+      quoteEl.classList.remove("pop");
+      void quoteEl.offsetWidth;
+      quoteEl.textContent = randQuote();
+      quoteEl.classList.add("pop");
+
+      // 채찍 숨기고, 문장만 보이게
+      whipScreen.style.display = "none";
+      quoteScreen.style.display = "flex";
+    }
+
+    // 화면 전환: 문장 -> 채찍(초기화)
+    function backToStart(){
+      // 문장 화면 숨기고, 채찍 화면 표시
+      quoteScreen.style.display = "none";
+      whipScreen.style.display = "flex";
+
+      // (선택) 다음에 다시 등장할 때 애니메이션 느낌 위해 문장 비우기
+      quoteEl.textContent = "";
+    }
+
+    whipBtn.addEventListener("click", hitWhip);
+    moreBtn.addEventListener("click", backToStart);
+
+    // 첫 로드: 채찍만
+    quoteEl.textContent = "";
+  </script>
+</body>
+</html>
