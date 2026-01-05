@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CARROT</title>
+  <meta name="theme-color" content="#F6F2EA" />
+
+  <!-- Fonts: cute/hip but readable -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+  <link rel="stylesheet" as="style" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+
+  <style>
+    :root{
+      --bg:#F6F2EA;      /* ivory */
+      --fg:#121212;
+      --line: rgba(18,18,18,.12);
+      --shadow: 0 18px 50px rgba(0,0,0,.10);
+      --carrot:#FF6A1A;
+      --mint:#2BB673;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: var(--bg);
+      color: var(--fg);
+      padding: 24px 16px;
+      font-family: "Pretendard Variable", system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    }
+    .wrap{
+      width:min(520px, 96vw);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 18px;
+    }
+
+    /* Screen 1: carrot only */
+    .carrotScreen{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+    }
+    .carrotBtn{
+      border:none;
+      background: transparent;
+      padding:0;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+      transform: translateY(0);
+      transition: transform .08s ease;
+    }
+    .carrotBtn:active{ transform: translateY(2px); }
+    .carrotImg{
+      width: min(300px, 78vw);
+      height: auto;
+      display:block;
+      filter: drop-shadow(0 18px 22px rgba(0,0,0,.12));
+    }
+
+    /* Screen 2: quote + button */
+    .quoteScreen{
+      display:none;
+      width:100%;
+      flex-direction:column;
+      align-items:center;
+      gap: 12px;
+      animation: fadeUp .18s ease-out forwards;
+    }
+    @keyframes fadeUp{
+      from{ opacity:0; transform: translateY(8px); }
+      to{ opacity:1; transform: translateY(0); }
+    }
+
+    .quote{
+      width:100%;
+      text-align:center;
+      font-family: "Black Han Sans", system-ui, sans-serif;
+      font-size: 26px;
+      line-height: 1.25;
+      letter-spacing: -.02em;
+      min-height: 112px;
+      padding: 0 10px;
+    }
+
+    .btn{
+      width: 180px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      box-shadow: 0 12px 26px rgba(0,0,0,.08);
+      font-family: "Pretendard Variable", system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform .08s ease;
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .pop{ animation: pop .12s ease-out; }
+    @keyframes pop{
+      from{ transform: scale(.99); opacity:.6; }
+      to{ transform: scale(1); opacity:1; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <!-- SCREEN 1 -->
+    <div class="carrotScreen" id="carrotScreen">
+      <button class="carrotBtn" id="carrotBtn" aria-label="당근">
+        <img class="carrotImg" src="assets/carrot.png" alt="carrot" />
+      </button>
+    </div>
+
+    <!-- SCREEN 2 -->
+    <div class="quoteScreen" id="quoteScreen">
+      <div class="quote" id="quote"></div>
+      <button class="btn" id="moreBtn" type="button">한입 더</button>
+    </div>
+  </div>
+
+  <script>
+    const QUOTES = [
+      "지금 충분히 잘하고 있어.",
+      "오늘 버틴 것만으로도 이미 대단해.",
+      "완벽 말고, 진짜가 최고야.",
+      "지금의 너도, 꽤 멋져.",
+      "조금 느려도 괜찮아. 멈춘 게 아니니까.",
+      "네가 해낸 것들을 잊지 마.",
+      "오늘의 작은 진전이 진짜 실력이다.",
+      "괜찮아. 다시 하면 돼.",
+      "너는 생각보다 훨씬 강해.",
+      "지금 숨 한 번, 그리고 다시.",
+      "너의 속도는 너의 것.",
+      "남들과 비교 말고, 어제의 너만 이겨.",
+      "잘 못해도 돼. 계속하면 돼.",
+      "너는 이미 시작했다. 그게 핵심이야.",
+      "조금만 더 가보자. 같이.",
+      "오늘도 살아낸 너에게 박수.",
+      "피곤한 건 노력했다는 증거야.",
+      "기분이 안 좋아도, 너는 여전히 가치 있어.",
+      "네 편은 내가 할게. 너는 너 편 해.",
+      "너무 잘하려고 하지 마. 그냥 해도 충분해.",
+      "딱 하나만 해도 오늘은 성공이야.",
+      "조급해하지 마. 쌓이면 바뀐다.",
+      "지금까지 온 것만으로도 대단한 거리야.",
+      "오늘은 ‘유지’만 해도 승리.",
+      "한 번 쉬고, 다시 가면 돼.",
+      "네 마음부터 챙겨. 그게 먼저야.",
+      "너는 이미 충분해.",
+      "오늘의 너는 내일을 살린다.",
+      "힘들면 잠깐 멈춰도 괜찮아.",
+      "네가 너를 미워하지 않았으면 좋겠어.",
+      "좋은 하루는 가끔 ‘괜찮은 하루’에서 시작돼.",
+      "작게 해도 돼. 작게라도 하자.",
+      "완벽하지 않아도 사랑받아야 해.",
+      "네가 버텨준 덕분에, 너는 여기 있어.",
+      "오늘의 너에게 따뜻하게 말해줘.",
+      "지금 이 순간도 지나간다. 괜찮아.",
+      "너는 네 방식으로 잘해낼 거야.",
+      "남는 건 결국 ‘해낸 너’야.",
+      "오늘 한 걸음이면 충분해.",
+      "너는 혼자가 아니야.",
+      "기다려줘. 너 자신을.",
+      "괜찮아. 천천히, 정확하게.",
+      "지금의 너도 미래의 너에게 선물이야.",
+      "잘하고 있어. 진짜로.",
+      "오늘의 실수는 내일의 데이터야.",
+      "너는 네 삶의 주인공이야.",
+      "조금 불안해도 괜찮아. 계속 가면 돼.",
+      "너의 노력은 사라지지 않아.",
+      "여기까지 온 너, 정말 수고했어.",
+      "오늘도 고생했어. 이제 한입 더."
+    ];
+
+    const carrotScreen = document.getElementById("carrotScreen");
+    const quoteScreen = document.getElementById("quoteScreen");
+    const carrotBtn = document.getElementById("carrotBtn");
+    const moreBtn = document.getElementById("moreBtn");
+    const quoteEl = document.getElementById("quote");
+
+    function randQuote(){
+      return QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    }
+
+    // Sounds (optional but recommended)
+    const biteSound = new Audio("assets/bite.mp3");
+    const sparkleSound = new Audio("assets/sparkle.mp3");
+    biteSound.preload = "auto";
+    sparkleSound.preload = "auto";
+    biteSound.volume = 1.0;
+    sparkleSound.volume = 0.9;
+
+    async function playSequence(){
+      try { biteSound.pause(); biteSound.currentTime = 0; } catch(e) {}
+      try { sparkleSound.pause(); sparkleSound.currentTime = 0; } catch(e) {}
+
+      // bite first
+      try { await biteSound.play(); } catch(e) {}
+
+      // sparkle later
+      setTimeout(() => {
+        try { sparkleSound.currentTime = 0; sparkleSound.play(); } catch(e) {}
+      }, 220);
+    }
+
+    async function eatCarrot(){
+      if (navigator.vibrate) navigator.vibrate([10, 24, 10]);
+
+      // 사운드 파일이 아직 없으면(404)도 문장 동작은 되게 try/catch
+      await playSequence();
+
+      quoteEl.classList.remove("pop");
+      void quoteEl.offsetWidth;
+      quoteEl.textContent = randQuote();
+      quoteEl.classList.add("pop");
+
+      carrotScreen.style.display = "none";
+      quoteScreen.style.display = "flex";
+    }
+
+    function backToStart(){
+      quoteScreen.style.display = "none";
+      carrotScreen.style.display = "flex";
+      quoteEl.textContent = "";
+    }
+
+    carrotBtn.addEventListener("click", eatCarrot);
+    moreBtn.addEventListener("click", backToStart);
+    quoteEl.textContent = "";
+  </script>
+</body>
+</html>
