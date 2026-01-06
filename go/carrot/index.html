@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>GO CARROT</title>
+</head>
+<body>
+<script>
+(async () => {
+  try {
+    const r = await fetch("../version.json?ts=" + Date.now(), { cache: "no-store" });
+    const v = await r.json();
+    const ver = encodeURIComponent(v.carrot ?? Date.now());
+    location.replace("../../carrot/?v=" + ver);
+  } catch (e) {
+    location.replace("../../carrot/?v=" + Date.now());
+  }
+})();
+</script>
+</body>
+</html>

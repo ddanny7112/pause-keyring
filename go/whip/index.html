@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>GO WHIP</title>
+</head>
+<body>
+<script>
+(async () => {
+  try {
+    // version.json은 항상 최신으로 가져오게 캐시 우회
+    const r = await fetch("../version.json?ts=" + Date.now(), { cache: "no-store" });
+    const v = await r.json();
+    const ver = encodeURIComponent(v.whip ?? Date.now());
+    // 고정 URL(/go/whip/) → 최신 URL(/whip/?v=...)로 이동
+    location.replace("../../whip/?v=" + ver);
+  } catch (e) {
+    location.replace("../../whip/?v=" + Date.now());
+  }
+})();
+</script>
+</body>
+</html>
