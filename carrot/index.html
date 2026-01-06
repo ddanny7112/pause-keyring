@@ -3,13 +3,39 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WHIP</title>
+  <title>CARROT</title>
   <meta name="theme-color" content="#F6F2EA" />
 
-  <!-- ✅ 경로 고정 (repo + 폴더 기준) -->
-  <base href="/pause-keyring/whip/">
+  <!-- (중요) 캐시 무력화 힌트 -->
+  <meta http-equiv="cache-control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="pragma" content="no-cache" />
+  <meta http-equiv="expires" content="0" />
 
-  <!-- Fonts: Kitsch/Hip -->
+  <!-- ✅ 자동 캐시 버스터: NFC로 열릴 때 '딱 1번' 자동 새로고침 -->
+  <script>
+    (function () {
+      function bust() {
+        const u = new URL(location.href);
+        u.searchParams.set("t", Date.now().toString());
+        location.replace(u.toString());
+      }
+
+      const u = new URL(location.href);
+
+      // t가 없으면: 최초 진입이므로 1번만 강제 새로고침
+      if (!u.searchParams.get("t")) {
+        bust();
+        return;
+      }
+
+      // iOS 사파리에서 이전 상태로 복원되는(bfcache) 경우 새로고침
+      window.addEventListener("pageshow", (e) => {
+        if (e.persisted) bust();
+      });
+    })();
+  </script>
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
@@ -18,10 +44,9 @@
 
   <style>
     :root{
-      --bg:#F6F2EA;      /* ivory */
+      --bg:#F6F2EA;
       --fg:#121212;
       --line: rgba(18,18,18,.12);
-      --shadow: 0 18px 50px rgba(0,0,0,.10);
     }
     *{ box-sizing:border-box; }
     body{
@@ -44,14 +69,14 @@
       gap: 18px;
     }
 
-    /* --- Screen 1: whip only --- */
-    .whipScreen{
+    /* Screen 1 */
+    .carrotScreen{
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
     }
-    .whipBtn{
+    .carrotBtn{
       border:none;
       background: transparent;
       padding:0;
@@ -61,16 +86,16 @@
       transform: translateY(0);
       transition: transform .08s ease;
     }
-    .whipBtn:active{ transform: translateY(2px); }
-    .whipImg{
+    .carrotBtn:active{ transform: translateY(2px); }
+    .carrotImg{
       width: min(320px, 82vw);
       height: auto;
       display:block;
       filter: drop-shadow(0 18px 22px rgba(0,0,0,.12));
     }
 
-    /* --- Screen 2: quote + button only --- */
-    .quoteScreen{
+    /* Screen 2 */
+    .msgScreen{
       display:none;
       width:100%;
       flex-direction:column;
@@ -83,7 +108,7 @@
       to{ opacity:1; transform: translateY(0); }
     }
 
-    .quote{
+    .msg{
       width:100%;
       text-align:center;
       font-family: "Black Han Sans", system-ui, sans-serif;
@@ -115,172 +140,97 @@
       to{ transform: scale(1); opacity:1; }
     }
   </style>
-
-  <!-- ✅ 자동 최신화(사용자 리프레시 없이) -->
-  <script>
-    // version.json을 캐시 없이 읽고, 버전이 바뀌면 ?v=...로 강제 재진입
-    const VERSION_KEY = "whip_version";
-    const VERSION_FILE = "version.json";
-
-    async function checkAndRefreshIfUpdated() {
-      try {
-        const res = await fetch(`${VERSION_FILE}?ts=${Date.now()}`, { cache: "no-store" });
-        if (!res.ok) return;
-
-        const data = await res.json();
-        const v = data && data.v;
-        if (!v) return;
-
-        const saved = localStorage.getItem(VERSION_KEY);
-        const url = new URL(location.href);
-        const currentParam = url.searchParams.get("v");
-
-        // 1) 저장된 버전과 다르거나 2) URL v 파라미터가 최신이 아니면
-        if (saved !== v || currentParam !== v) {
-          localStorage.setItem(VERSION_KEY, v);
-          url.searchParams.set("v", v);
-          // replace: 히스토리 오염 줄이기
-          location.replace(url.toString());
-        }
-      } catch (e) {
-        // 네트워크/오프라인이면 조용히 패스
-      }
-    }
-
-    // iOS에서 뒤로가기/복귀 시 bfcache로 옛 페이지가 뜨는 경우가 있어 pageshow에서 체크
-    window.addEventListener("pageshow", () => checkAndRefreshIfUpdated());
-  </script>
 </head>
 
 <body>
   <div class="wrap">
-    <!-- SCREEN 1: whip only -->
-    <div class="whipScreen" id="whipScreen">
-      <button class="whipBtn" id="whipBtn" aria-label="채찍">
-        <!-- ✅ id 부여 + src는 아래 JS에서 v 파라미터로 갱신 -->
-        <img class="whipImg" id="whipImg" src="assets/whip.png" alt="whip" />
+    <!-- SCREEN 1 -->
+    <div class="carrotScreen" id="carrotScreen">
+      <button class="carrotBtn" id="carrotBtn" aria-label="당근">
+        <img class="carrotImg" id="carrotImg" src="" alt="carrot" />
       </button>
     </div>
 
-    <!-- SCREEN 2: quote + one button -->
-    <div class="quoteScreen" id="quoteScreen">
-      <div class="quote" id="quote"></div>
-      <button class="btn" id="moreBtn" type="button">한대 더</button>
+    <!-- SCREEN 2 -->
+    <div class="msgScreen" id="msgScreen">
+      <div class="msg" id="msg"></div>
+      <button class="btn" id="againBtn" type="button">한입 더</button>
     </div>
   </div>
 
   <script>
-    const QUOTES = [
-      "지금 안 하면, 그냥 안 하는 사람이야.",
-      "완벽 기다리지 말고, 10분만 시작해.",
-      "핑계는 네 하루를 먹는다. 끊어.",
-      "기분 말고 약속으로 움직여.",
-      "미루는 순간, 내일이 더 무거워진다.",
-      "딱 하나만 끝내. 그게 오늘을 바꿔.",
-      "할 수 있냐고? 해. 지금.",
-      "생각은 충분해. 몸이 움직일 차례야.",
-      "‘나중에’는 거의 항상 ‘안 함’이다.",
-      "지금 시작하면 오늘이 달라진다.",
-      "오늘의 너는, 어제의 선택 결과야.",
-      "하기 싫어도 해. 그게 실력이다.",
-      "계획 세우는 척 말고, 실행해.",
-      "지금 미루면, 결국 더 크게 갚는다.",
-      "딱 5분만 해. 시작이 반이다.",
-      "네가 널 믿게 만드는 건 ‘행동’뿐이야.",
-      "불안하면 더 해. 멈추면 더 불안해진다.",
-      "컨디션 탓하지 마. 조건은 늘 불완전해.",
-      "오늘 대충하면, 내일도 대충한다.",
-      "네가 바뀌는 순간은 ‘지금’뿐.",
-      "쉬는 건 좋아. 근데 도망치진 마.",
-      "지금 안 하면, 미래의 네가 욕한다.",
-      "시간은 공짜가 아니야. 오늘도 결제 중.",
-      "마감은 안 기다려. 네가 맞춰야 해.",
-      "머리 속에서만 하지 말고, 손을 움직여.",
-      "할 일 하나 끝내면, 기분이 따라온다.",
-      "의욕이 아니라 습관으로 버텨.",
-      "지금 안 하면, 다음도 못 한다.",
-      "한 번만 더 눕는다고 인생이 나아지진 않아.",
-      "지금 하는 게 제일 빠른 길이다.",
-      "너 자신과 한 약속부터 지켜.",
-      "오늘을 버리면, 너를 버리는 거랑 같아.",
-      "‘피곤해’는 사실 ‘미루고 싶어’일 때가 많다.",
-      "너의 목표는 네 변명을 모른다.",
-      "할 수 있는 만큼만? 그럼 늘 그만큼만 산다.",
-      "네가 해야 할 일은 네가 제일 잘 알잖아.",
-      "불편함을 피하면, 성장은 없다.",
-      "잘하려고 미루지 마. 그냥 해.",
-      "진짜 강한 사람은 ‘하기 싫을 때’ 한다.",
-      "오늘의 작은 승리가 자신감을 만든다.",
-      "시작하면 별거 아니다. 시작이 제일 무겁다.",
-      "지금 손에 쥔 폰이 네 시간을 훔친다.",
-      "집중 15분이면 판이 바뀐다.",
-      "할 일 미루는 동안, 경쟁자는 한다.",
-      "오늘 덜 하면, 내일 더 힘들다.",
-      "네 인생은 네 스케줄대로만 바뀐다.",
-      "마음이 아니라 캘린더로 움직여.",
-      "지금 한 번만 더 하면, 너는 달라진다.",
-      "너의 기준을 네가 낮추지 마.",
-      "네가 끝까지 하는 사람인 걸 증명해."
+    /***********************
+     * ✅ 여기만 바꾸면 됨 (A 방식: 파일명 버전업)
+     ***********************/
+    const IMG_FILE  = "carrot_v1.png";  // 예: carrot_v2.png
+    const SND_FILE  = "bite_v1.mp3";  // 예: carrot_v2.mp3
+
+    // 메시지(당근은 채찍보다 좀 “보상/칭찬” 톤 추천)
+    const MESSAGES = [
+      "잘했어. 지금 페이스 유지하면 돼.",
+      "오늘의 너, 꽤 멋진데?",
+      "한 걸음 했으면 이미 이긴 거야.",
+      "조금씩 쌓이면 어느 순간 확 바뀐다.",
+      "지금 이 10분이 내일을 살려.",
+      "완벽 말고 꾸준함. 그게 진짜다.",
+      "오늘 한 거, 너 스스로가 제일 알아.",
+      "좋아. 이제 한 번 더 가자.",
+      "멈추지 마. 너 이미 시작했어.",
+      "지금 같은 리듬이 성장이다."
     ];
 
-    const whipScreen = document.getElementById("whipScreen");
-    const quoteScreen = document.getElementById("quoteScreen");
-    const whipBtn = document.getElementById("whipBtn");
-    const moreBtn = document.getElementById("moreBtn");
-    const quoteEl = document.getElementById("quote");
-    const whipImg = document.getElementById("whipImg");
+    const carrotScreen = document.getElementById("carrotScreen");
+    const msgScreen = document.getElementById("msgScreen");
+    const carrotBtn = document.getElementById("carrotBtn");
+    const againBtn = document.getElementById("againBtn");
+    const msgEl = document.getElementById("msg");
+    const carrotImg = document.getElementById("carrotImg");
 
-    function randQuote(){
-      return QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    function randMsg(){
+      return MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
     }
 
-    // ✅ URL의 v 파라미터를 에셋에 붙여 캐시 무력화
-    const vParam = new URLSearchParams(location.search).get("v") || "0";
-    whipImg.src = `assets/whip.png?v=${vParam}`;
+    // ✅ t 파라미터를 에셋에도 붙여서 캐시 완전 무력화
+    const t = new URLSearchParams(location.search).get("t") || "0";
 
-    // mp3 paths (+ cache buster)
-    const whipSound = new Audio(`assets/whip.mp3?v=${vParam}`);
-    const horseSound = new Audio(`assets/horse.mp3?v=${vParam}`);
-    whipSound.preload = "auto";
-    horseSound.preload = "auto";
-    whipSound.volume = 1.0;
-    horseSound.volume = 0.9;
+    // 경로: carrot/index.html 기준으로 assets 폴더가 바로 아래에 있어야 함
+    carrotImg.src = `assets/${IMG_FILE}?t=${t}`;
 
-    async function playSequence(){
-      try { whipSound.pause(); whipSound.currentTime = 0; } catch(e) {}
-      try { horseSound.pause(); horseSound.currentTime = 0; } catch(e) {}
+    // 오디오 준비
+    const carrotSound = new Audio(`assets/${SND_FILE}?t=${t}`);
+    carrotSound.preload = "auto";
+    carrotSound.volume = 1.0;
+    try { carrotSound.load(); } catch(e) {}
 
-      // iOS: 사용자 제스처(클릭) 안에서 play()되어야 함
-      try { await whipSound.play(); } catch(e) {}
-
-      setTimeout(() => {
-        try { horseSound.currentTime = 0; horseSound.play(); } catch(e) {}
-      }, 320);
+    async function playSound(){
+      try { carrotSound.pause(); carrotSound.currentTime = 0; } catch(e) {}
+      // iOS: 클릭(사용자 제스처) 안에서 play()되어야 함
+      try { await carrotSound.play(); } catch(e) {}
     }
 
-    async function hitWhip(){
-      if (navigator.vibrate) navigator.vibrate([12, 30, 12]);
+    async function biteCarrot(){
+      if (navigator.vibrate) navigator.vibrate([10, 20, 10]);
 
-      await playSequence();
+      await playSound();
 
-      quoteEl.classList.remove("pop");
-      void quoteEl.offsetWidth;
-      quoteEl.textContent = randQuote();
-      quoteEl.classList.add("pop");
+      msgEl.classList.remove("pop");
+      void msgEl.offsetWidth;
+      msgEl.textContent = randMsg();
+      msgEl.classList.add("pop");
 
-      whipScreen.style.display = "none";
-      quoteScreen.style.display = "flex";
+      carrotScreen.style.display = "none";
+      msgScreen.style.display = "flex";
     }
 
     function backToStart(){
-      quoteScreen.style.display = "none";
-      whipScreen.style.display = "flex";
-      quoteEl.textContent = "";
+      msgScreen.style.display = "none";
+      carrotScreen.style.display = "flex";
+      msgEl.textContent = "";
     }
 
-    whipBtn.addEventListener("click", hitWhip);
-    moreBtn.addEventListener("click", backToStart);
-    quoteEl.textContent = "";
+    carrotBtn.addEventListener("click", biteCarrot);
+    againBtn.addEventListener("click", backToStart);
+    msgEl.textContent = "";
   </script>
 </body>
 </html>
