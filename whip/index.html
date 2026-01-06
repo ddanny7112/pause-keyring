@@ -3,11 +3,39 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <base href="/pause-keyring/whip/">
   <title>WHIP</title>
   <meta name="theme-color" content="#F6F2EA" />
 
-  <!-- Fonts: Kitsch/Hip -->
+  <!-- (중요) 캐시 무력화 힌트 -->
+  <meta http-equiv="cache-control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="pragma" content="no-cache" />
+  <meta http-equiv="expires" content="0" />
+
+  <!-- ✅ 자동 캐시 버스터: NFC로 열릴 때 '딱 1번' 자동 새로고침 -->
+  <script>
+    (function () {
+      function bust() {
+        const u = new URL(location.href);
+        u.searchParams.set("t", Date.now().toString());
+        location.replace(u.toString());
+      }
+
+      const u = new URL(location.href);
+
+      // t가 없으면: 최초 진입이므로 1번만 강제 새로고침
+      if (!u.searchParams.get("t")) {
+        bust();
+        return;
+      }
+
+      // iOS 사파리에서 이전 상태로 복원되는(bfcache) 경우 새로고침
+      window.addEventListener("pageshow", (e) => {
+        if (e.persisted) bust();
+      });
+    })();
+  </script>
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
@@ -16,10 +44,9 @@
 
   <style>
     :root{
-      --bg:#F6F2EA;      /* ivory */
+      --bg:#F6F2EA;
       --fg:#121212;
       --line: rgba(18,18,18,.12);
-      --shadow: 0 18px 50px rgba(0,0,0,.10);
     }
     *{ box-sizing:border-box; }
     body{
@@ -42,7 +69,7 @@
       gap: 18px;
     }
 
-    /* --- Screen 1: whip only --- */
+    /* Screen 1 */
     .whipScreen{
       display:flex;
       flex-direction:column;
@@ -67,7 +94,7 @@
       filter: drop-shadow(0 18px 22px rgba(0,0,0,.12));
     }
 
-    /* --- Screen 2: quote + button only --- */
+    /* Screen 2 */
     .quoteScreen{
       display:none;
       width:100%;
@@ -117,14 +144,14 @@
 
 <body>
   <div class="wrap">
-    <!-- SCREEN 1: whip only -->
+    <!-- SCREEN 1 -->
     <div class="whipScreen" id="whipScreen">
       <button class="whipBtn" id="whipBtn" aria-label="채찍">
-        <img class="whipImg" src="assets/whip.png" alt="whip" />
+        <img class="whipImg" id="whipImg" src="" alt="whip" />
       </button>
     </div>
 
-    <!-- SCREEN 2: quote + one button -->
+    <!-- SCREEN 2 -->
     <div class="quoteScreen" id="quoteScreen">
       <div class="quote" id="quote"></div>
       <button class="btn" id="moreBtn" type="button">한대 더</button>
@@ -132,6 +159,13 @@
   </div>
 
   <script>
+    /***********************
+     * ✅ 여기만 바꾸면 됨 (A 방식: 파일명 버전업)
+     ***********************/
+    const IMG_FILE   = "whip_v2.png";   // 예: whip_002.png
+    const WHIP_FILE  = "whip_v1.mp3";   // 예: whip_002.mp3
+    const HORSE_FILE = "horse_v1.mp3";  // 예: horse_002.mp3
+
     const QUOTES = [
       "지금 안 하면, 그냥 안 하는 사람이야.",
       "완벽 기다리지 말고, 10분만 시작해.",
@@ -190,27 +224,37 @@
     const whipBtn = document.getElementById("whipBtn");
     const moreBtn = document.getElementById("moreBtn");
     const quoteEl = document.getElementById("quote");
+    const whipImg = document.getElementById("whipImg");
 
     function randQuote(){
       return QUOTES[Math.floor(Math.random() * QUOTES.length)];
     }
 
-    // mp3 paths
-    const whipSound = new Audio("assets/whip.mp3");
-    const horseSound = new Audio("assets/horse.mp3");
+    // ✅ t 파라미터를 에셋에도 붙여서(추가 안전) 캐시 완전 무력화
+    const t = new URLSearchParams(location.search).get("t") || "0";
+
+    // 경로: whip/index.html 기준으로 assets 폴더가 바로 아래에 있어야 함
+    whipImg.src = `assets/${IMG_FILE}?t=${t}`;
+
+    // 오디오 준비
+    const whipSound  = new Audio(`assets/${WHIP_FILE}?t=${t}`);
+    const horseSound = new Audio(`assets/${HORSE_FILE}?t=${t}`);
+
     whipSound.preload = "auto";
     horseSound.preload = "auto";
     whipSound.volume = 1.0;
     horseSound.volume = 0.9;
 
+    // 일부 브라우저에서 preload 힌트
+    try { whipSound.load(); horseSound.load(); } catch(e) {}
+
     async function playSequence(){
-      try { whipSound.pause(); whipSound.currentTime = 0; } catch(e) {}
+      try { whipSound.pause();  whipSound.currentTime = 0; } catch(e) {}
       try { horseSound.pause(); horseSound.currentTime = 0; } catch(e) {}
 
-      // iOS: click handler 안에서 play()해야 함
+      // iOS: 클릭(사용자 제스처) 안에서 play()되어야 함
       try { await whipSound.play(); } catch(e) {}
 
-      // whip 다음 horse (딜레이 늘림)
       setTimeout(() => {
         try { horseSound.currentTime = 0; horseSound.play(); } catch(e) {}
       }, 320);
