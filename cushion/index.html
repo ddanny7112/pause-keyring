@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>쿠션어 번역기</title>
+  <meta name="description" content="하고 싶은 말은 그대로, 말투만 푹신하게" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+  <style>
+*{box-sizing:border-box}
+body{margin:0}
+/* Layout: one soft column, phone-first; a tufted cushion mark that hardens in 톡식 mode */
+:root {
+  --bg: #F5F0F4;
+  --surface: #FFFFFF;
+  --sunken: #EFE7EE;
+  --ink: #2A2130;
+  --muted: #76687C;
+  --line: #E3D8E2;
+  --accent: #D9668A;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #F8DCE6;
+  --ad: #EDEAF0;
+  --font-display: "Jua", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+:root[data-mode="toxic"] {
+  --accent: #D9432B;
+  --accent-soft: #FADDD6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1B161E; --surface: #261F2A; --sunken: #201A23; --ink: #F2EAF2; --muted: #A898AD;
+    --line: #3A3040; --accent: #EC86A6; --accent-ink: #1B161E; --accent-soft: #452935; --ad: #2B2530;
+    color-scheme: dark;
+  }
+  :root:not([data-theme="light"])[data-mode="toxic"] { --accent: #F06A50; --accent-soft: #48261F; }
+}
+:root[data-theme="dark"] {
+  --bg: #1B161E; --surface: #261F2A; --sunken: #201A23; --ink: #F2EAF2; --muted: #A898AD;
+  --line: #3A3040; --accent: #EC86A6; --accent-ink: #1B161E; --accent-soft: #452935; --ad: #2B2530;
+  color-scheme: dark;
+}
+:root[data-theme="dark"][data-mode="toxic"] { --accent: #F06A50; --accent-soft: #48261F; }
+
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+}
+.wrap {
+  max-width: 560px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+header { display: flex; align-items: center; gap: 14px; }
+.cushion {
+  width: 56px; height: 56px; flex: none; position: relative;
+  background: var(--accent); border-radius: 40%;
+  box-shadow: inset -6px -8px 0 rgba(0,0,0,.08), inset 6px 6px 0 rgba(255,255,255,.25);
+  transition: border-radius .35s ease, background .35s ease, transform .35s ease;
+}
+.cushion::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px;
+  margin: -4px 0 0 -4px; border-radius: 50%; background: rgba(0,0,0,.18);
+  box-shadow: 0 0 0 4px rgba(255,255,255,.18);
+}
+:root[data-mode="toxic"] .cushion { border-radius: 10%; transform: rotate(45deg) scale(.86); }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; line-height: 1.15; margin: 0; text-wrap: balance; }
+.tag { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+
+.modes {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px;
+  background: var(--sunken); border-radius: 999px;
+}
+.modes button {
+  font: inherit; font-family: var(--font-display); font-size: 16px; color: var(--muted);
+  background: transparent; border: 0; border-radius: 999px; padding: 10px 8px; cursor: pointer;
+}
+.modes button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+
+.panel { background: var(--surface); border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+label.lbl, .lbl { font-size: 13px; color: var(--muted); letter-spacing: .02em; display: block; margin-bottom: 6px; }
+textarea {
+  width: 100%; box-sizing: border-box; min-height: 110px; resize: vertical;
+  font: inherit; color: var(--ink); background: var(--sunken);
+  border: 1.5px solid transparent; border-radius: 14px; padding: 12px 14px;
+}
+textarea:focus { outline: none; border-color: var(--accent); }
+.count { text-align: right; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: 4px; }
+.count.over { color: var(--accent); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: inherit; font-size: 14px; color: var(--ink); background: transparent;
+  border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+
+.levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.levels .chip { text-align: center; padding: 8px 4px; }
+
+.go {
+  font: inherit; font-family: var(--font-display); font-size: 19px;
+  background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 16px;
+  padding: 14px; cursor: pointer; transition: transform .1s ease, opacity .2s;
+}
+.go:active { transform: scale(.98); }
+.go:disabled { opacity: .55; cursor: default; }
+button:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.samples { display: flex; flex-wrap: wrap; gap: 6px; }
+.samples button {
+  font: inherit; font-size: 13px; color: var(--muted); background: transparent; border: 0;
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 2px 4px;
+}
+
+.status { font-size: 14px; color: var(--muted); min-height: 1.4em; }
+.results { display: flex; flex-direction: column; gap: 12px; }
+.res-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.res-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 20px; margin: 0; }
+.badge { font-size: 12px; color: var(--muted); background: var(--sunken); border-radius: 999px; padding: 2px 10px; }
+.card { background: var(--surface); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.card .k { font-family: var(--font-display); font-size: 15px; color: var(--accent); }
+.card p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.card .copy {
+  align-self: flex-end; font: inherit; font-size: 13px; color: var(--ink);
+  background: var(--sunken); border: 0; border-radius: 999px; padding: 5px 14px; cursor: pointer;
+}
+
+.ad {
+  border: 1.5px dashed var(--line); background: var(--ad); border-radius: 14px;
+  padding: 16px; text-align: center; color: var(--muted); font-size: 13px;
+}
+.ad b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 15px; color: var(--ink); }
+footer { font-size: 12px; color: var(--muted); text-align: center; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="cushion" aria-hidden="true"></div>
+    <div>
+      <h1>쿠션어 번역기</h1>
+      <p class="tag" id="tagline">하고 싶은 말은 그대로, 말투만 푹신하게</p>
+    </div>
+  </header>
+
+  <div class="modes" role="group" aria-label="번역 모드">
+    <button type="button" id="mode-cushion" aria-pressed="true">쿠션 모드</button>
+    <button type="button" id="mode-toxic" aria-pressed="false">톡식 모드</button>
+  </div>
+
+  <form class="panel" id="form">
+    <div>
+      <label class="lbl" for="input" id="input-label">하고 싶은 말 (직설적으로 써도 돼요)</label>
+      <textarea id="input" maxlength="300">내일까지 보고서 다시 해오세요. 이번 건 너무 엉성해요.</textarea>
+      <div class="count" id="count">0 / 300</div>
+      <div class="samples" id="samples"></div>
+    </div>
+
+    <div id="target-wrap">
+      <span class="lbl">누구에게 보내나요?</span>
+      <div class="chips" id="targets"></div>
+    </div>
+
+    <div>
+      <span class="lbl" id="level-label">쿠션 두께</span>
+      <div class="levels" id="levels"></div>
+    </div>
+
+    <button type="submit" class="go" id="go">쿠션 씌우기</button>
+    <div class="status" id="status" role="status"></div>
+  </form>
+
+  <section class="results" aria-live="polite">
+    <div class="res-head">
+      <h2 id="res-title">이렇게 말해보세요</h2>
+      <span class="badge" id="res-badge">예시 결과</span>
+    </div>
+    <div id="cards" class="results"></div>
+    <div class="ad" aria-label="광고 영역 예시">
+      <b>광고 영역</b>
+      변환 결과 아래 배너 자리 (애드센스·애드핏 예정)
+    </div>
+  </section>
+
+  <footer>쿠션어 번역기 · pause-keyring</footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const root = document.documentElement;
+
+const TARGETS = ["상사", "동료", "친구", "고객", "연인", "가족"];
+const LEVELS = {
+  cushion: [["살짝", "원래 말투를 살리되 날만 살짝 무디게"], ["푹신", "확실히 부드럽고 배려 있게"], ["극세사", "최대한 공손하고 다정하게, 칭찬과 감사 표현까지 곁들여"]],
+  toxic: [["순한맛", "살짝 솔직하게, 웃으며 넘길 수준"], ["보통맛", "돌려 말한 부분을 걷어내고 핵심만 직설적으로"], ["매운맛", "재치 있는 팩폭 수준으로 시원하게"]]
+};
+const SAMPLES = {
+  cushion: ["내일까지 보고서 다시 해오세요. 이번 건 너무 엉성해요.", "그 약속 못 가. 귀찮아.", "환불 안 됩니다. 규정 읽어보세요.", "왜 아직도 답장 안 해?"],
+  toxic: ["검토해보고 다시 연락드리겠습니다.", "좋은 의견 감사합니다. 참고하겠습니다.", "다음에 밥 한번 먹자!", "확인 부탁드립니다~"]
+};
+const EXAMPLE = [
+  { label: "정중형", text: "보고서 확인했어요. 전체적인 방향은 좋은데, 몇 군데만 보완하면 훨씬 탄탄해질 것 같아요. 혹시 내일까지 한 번 더 다듬어주실 수 있을까요?" },
+  { label: "다정형", text: "고생 많으셨어요! 읽어보니 조금만 더 채우면 완성도가 확 올라갈 것 같아서요. 바쁘시겠지만 내일까지 한 번만 더 봐주시면 정말 감사하겠습니다." },
+  { label: "깔끔형", text: "보고서 잘 받았습니다. 보완이 필요한 부분이 있어 내일까지 수정본 부탁드려도 될까요? 필요하면 같이 봐드릴게요." }
+];
+
+const EXAMPLE_TOXIC = [
+  { label: "현실형", text: "지금은 안 할 거고, 먼저 연락할 생각도 별로 없어요." },
+  { label: "팩폭형", text: "솔직히 관심 없는데 거절하기 애매해서 시간 버는 중이에요." },
+  { label: "한줄요약", text: "안 함." }
+];
+const EXAMPLE_INPUT = { cushion: SAMPLES.cushion[0], toxic: SAMPLES.toxic[0] };
+
+let mode = "cushion", target = "동료", level = 1, busy = false, showingExample = true;
+
+function renderChips() {
+  const t = $("targets"); t.textContent = "";
+  for (const name of TARGETS) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = name;
+    b.setAttribute("aria-pressed", String(name === target));
+    b.onclick = () => { target = name; renderChips(); };
+    t.append(b);
+  }
+  const l = $("levels"); l.textContent = "";
+  LEVELS[mode].forEach(([name], i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = name;
+    b.setAttribute("aria-pressed", String(i === level));
+    b.onclick = () => { level = i; renderChips(); };
+    l.append(b);
+  });
+  const s = $("samples"); s.textContent = "";
+  for (const txt of SAMPLES[mode]) {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = txt.length > 14 ? txt.slice(0, 14) + "…" : txt;
+    b.onclick = () => { $("input").value = txt; updateCount(); };
+    s.append(b);
+  }
+}
+
+function setMode(m) {
+  mode = m;
+  root.dataset.mode = m;
+  $("mode-cushion").setAttribute("aria-pressed", String(m === "cushion"));
+  $("mode-toxic").setAttribute("aria-pressed", String(m === "toxic"));
+  const toxic = m === "toxic";
+  $("tagline").textContent = toxic ? "돌려 말한 그 말, 속마음은 이거예요" : "하고 싶은 말은 그대로, 말투만 푹신하게";
+  $("input-label").textContent = toxic ? "번역할 쿠션어 (받은 메시지를 붙여넣어 보세요)" : "하고 싶은 말 (직설적으로 써도 돼요)";
+  $("target-wrap").hidden = toxic;
+  $("level-label").textContent = toxic ? "맵기" : "쿠션 두께";
+  $("go").textContent = toxic ? "속마음 번역" : "쿠션 씌우기";
+  $("res-title").textContent = toxic ? "속마음은 이래요" : "이렇게 말해보세요";
+  renderChips();
+  if (showingExample) {
+    $("input").value = EXAMPLE_INPUT[m];
+    updateCount();
+    renderResults(toxic ? EXAMPLE_TOXIC : EXAMPLE, true);
+  }
+}
+
+function updateCount() {
+  const n = $("input").value.length;
+  $("count").textContent = n + " / 300";
+  $("count").classList.toggle("over", n >= 300);
+}
+
+async function copyText(text, btn) {
+  try { await navigator.clipboard.writeText(text); btn.textContent = "복사됨"; }
+  catch {
+    const r = document.createRange(); r.selectNodeContents(btn.previousElementSibling);
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    btn.textContent = "선택됨 · 길게 눌러 복사";
+  }
+  setTimeout(() => { btn.textContent = "복사"; }, 1800);
+}
+
+function renderResults(list, isExample) {
+  const c = $("cards"); c.textContent = "";
+  $("res-badge").textContent = isExample ? "예시 결과" : "AI 변환 결과";
+  for (const r of list) {
+    const card = document.createElement("article"); card.className = "card";
+    const k = document.createElement("span"); k.className = "k"; k.textContent = r.label || "버전";
+    const p = document.createElement("p"); p.textContent = r.text;
+    const b = document.createElement("button"); b.type = "button"; b.className = "copy"; b.textContent = "복사";
+    b.onclick = () => copyText(r.text, b);
+    card.append(k, p, b); c.append(card);
+  }
+}
+
+const ERR = {
+  rate_limited: "요청이 많아요. 잠시 후 다시 눌러주세요.",
+  too_long: "300자 이내로 줄여주세요.",
+  refused: "이 문장은 변환할 수 없어요. 표현을 바꿔서 다시 시도해주세요.",
+  invalid_json: "결과를 읽지 못했어요. 한 번 더 눌러주세요.",
+  empty_completion: "결과가 비어 있어요. 문장을 조금 바꿔서 다시 시도해주세요."
+};
+
+// Cloudflare Worker 주소 (3단계에서 받은 주소로 바꿔 넣기)
+const API_URL = "https://YOUR-WORKER.workers.dev";
+
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (busy) return;
+  const text = $("input").value.trim();
+  if (!text) { $("status").textContent = "변환할 문장을 먼저 입력해주세요."; return; }
+  busy = true; $("go").disabled = true;
+  $("status").textContent = mode === "toxic" ? "속마음 읽는 중…" : "쿠션 씌우는 중…";
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode, target, level, text })
+    });
+    const out = await res.json().catch(() => null);
+    if (!res.ok) throw { code: out?.error || "upstream_error" };
+    const list = Array.isArray(out?.results) ? out.results.filter(r => r && typeof r.text === "string" && r.text.trim()) : [];
+    if (!list.length) throw { code: "invalid_json" };
+    showingExample = false;
+    renderResults(list.slice(0, 3).map(r => ({ label: String(r.label || "버전"), text: r.text.trim() })), false);
+    $("status").textContent = "";
+  } catch (err) {
+    $("status").textContent = ERR[err?.code] || "잠시 연결이 불안정했어요. 다시 눌러주세요.";
+  } finally {
+    busy = false; $("go").disabled = false;
+  }
+});
+
+$("mode-cushion").onclick = () => setMode("cushion");
+$("mode-toxic").onclick = () => setMode("toxic");
+$("input").addEventListener("input", updateCount);
+
+setMode(location.hash === "#toxic" ? "toxic" : "cushion");
+</script>
+</body>
+</html>
