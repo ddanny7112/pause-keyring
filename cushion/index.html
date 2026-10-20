@@ -203,7 +203,7 @@ const root = document.documentElement;
 const TARGETS = ["상사", "동료", "친구", "고객", "연인", "가족"];
 const LEVELS = {
   cushion: [["살짝", "원래 말투를 살리되 날만 살짝 무디게"], ["푹신", "확실히 부드럽고 배려 있게"], ["극세사", "최대한 공손하고 다정하게, 칭찬과 감사 표현까지 곁들여"]],
-  toxic: [["순한맛", "살짝 솔직하게, 웃으며 넘길 수준"], ["보통맛", "돌려 말한 부분을 걷어내고 핵심만 직설적으로"], ["매운맛", "재치 있는 팩폭 수준으로 시원하게"]]
+  toxic: [["톡", "살짝 솔직하게, 웃으며 넘길 수준"], ["퍽", "돌려 말한 부분을 걷어내고 핵심만 직설적으로"], ["뻑!", "재치 있는 팩폭 수준으로 시원하게"]]
 };
 const SAMPLES = {
   cushion: ["내일까지 보고서 다시 해오세요. 이번 건 너무 엉성해요.", "그 약속 못 가. 귀찮아.", "환불 안 됩니다. 규정 읽어보세요.", "왜 아직도 답장 안 해?"],
@@ -252,7 +252,7 @@ function setMode(m) {
   $("tagline").textContent = toxic ? "돌려 말한 그 말, 속마음은 이거예요" : "하고 싶은 말은 그대로, 말투만 푹신하게";
   $("input-label").textContent = toxic ? "번역할 쿠션어 (받은 메시지를 붙여넣어 보세요)" : "하고 싶은 말 (직설적으로 써도 돼요)";
   $("target-wrap").hidden = toxic;
-  $("level-label").textContent = toxic ? "맵기" : "쿠션 두께";
+  $("level-label").textContent = toxic ? "세기" : "쿠션 두께";
   $("go").textContent = toxic ? "속마음 번역" : "쿠션 씌우기";
   $("res-title").textContent = toxic ? "속마음은 이래요" : "이렇게 말해보세요";
   renderChips();
@@ -284,7 +284,7 @@ function renderResult(text, isExample, lv = level) {
   $("res-badge").textContent = isExample ? "예시 결과" : "AI 변환 결과";
   const card = document.createElement("article"); card.className = "card";
   const k = document.createElement("span"); k.className = "k";
-  k.textContent = (mode === "toxic" ? "맵기 · " : "두께 · ") + LEVELS[mode][lv][0];
+  k.textContent = (mode === "toxic" ? "세기 · " : "두께 · ") + LEVELS[mode][lv][0];
   const p = document.createElement("p"); p.textContent = text;
   const b = document.createElement("button"); b.type = "button"; b.className = "copy"; b.textContent = "복사";
   b.onclick = () => copyText(text, b);
