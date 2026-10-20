@@ -62,9 +62,12 @@ export default {
     if (!text) return reply({ error: "bad_request" }, 400, origin);
     if (text.length > 300) return reply({ error: "too_long" }, 400, origin);
 
+    const key = String(env.OPENAI_API_KEY || "").trim();
+    if (!key) return reply({ error: "no_key" }, 500, origin);
+
     const ai = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
-      headers: { "Authorization": "Bearer " + env.OPENAI_API_KEY, "Content-Type": "application/json" },
+      headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: MODEL,
         temperature: 0.8,
@@ -72,8 +75,13 @@ export default {
         messages: [{ role: "user", content: buildPrompt(mode, target, level, text) }]
       })
     });
-    if (ai.status === 429) return reply({ error: "rate_limited" }, 429, origin);
-    if (!ai.ok) return reply({ error: "upstream_error" }, 502, origin);
+    if (!ai.ok) {
+      // OpenAI가 거절한 이유(코드만)를 함께 돌려준다. 키 값은 절대 포함하지 않는다.
+      let code = "";
+      try { const e = await ai.json(); code = String(e?.error?.code || e?.error?.type || ""); } catch {}
+      const error = ai.status === 429 && code !== "insufficient_quota" ? "rate_limited" : "upstream_error";
+      return reply({ error, detail: { status: ai.status, code } }, ai.status === 429 ? 429 : 502, origin);
+    }
 
     try {
       const data = await ai.json();
