@@ -297,6 +297,7 @@ function renderResults(list, isExample) {
 const ERR = {
   rate_limited: "요청이 많아요. 잠시 후 다시 눌러주세요.",
   too_long: "300자 이내로 줄여주세요.",
+  no_credit: "지금은 변환 서비스를 잠시 쉬고 있어요. 조금 뒤에 다시 시도해주세요.",
   refused: "이 문장은 변환할 수 없어요. 표현을 바꿔서 다시 시도해주세요.",
   invalid_json: "결과를 읽지 못했어요. 한 번 더 눌러주세요.",
   empty_completion: "결과가 비어 있어요. 문장을 조금 바꿔서 다시 시도해주세요."
@@ -319,7 +320,10 @@ $("form").addEventListener("submit", async (e) => {
       body: JSON.stringify({ mode, target, level, text })
     });
     const out = await res.json().catch(() => null);
-    if (!res.ok) throw { code: out?.error || "upstream_error" };
+    if (!res.ok) {
+      const d = String(out?.detail?.code || "");
+      throw { code: /credit|quota|billing/.test(d) ? "no_credit" : (out?.error || "upstream_error") };
+    }
     const list = Array.isArray(out?.results) ? out.results.filter(r => r && typeof r.text === "string" && r.text.trim()) : [];
     if (!list.length) throw { code: "invalid_json" };
     showingExample = false;
