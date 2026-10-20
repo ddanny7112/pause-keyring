@@ -3,9 +3,7 @@
 // - 이 파일은 GitHub Pages에서 쓰이지 않는다. Cloudflare Worker 편집기에 붙여넣는 용도.
 
 const ALLOWED_ORIGIN = "https://ddanny7112.github.io";
-const MODEL = "gpt-4o-mini"; // 기본 모델
-// 비교 테스트용: 화면에서 이 목록 안의 모델만 골라 쓸 수 있다. 테스트가 끝나면 하나만 남긴다.
-const TEST_MODELS = ["gpt-4o-mini", "gpt-6-luna", "gpt-6.1-sol"];
+const MODEL = "gpt-6-luna"; // 2026-10-20 비교 테스트 후 선택 (구어체 가장 자연스럽고 비용은 4o-mini와 비슷)
 
 const TARGETS = ["상사", "동료", "친구", "고객", "연인", "가족"];
 const LEVELS = {
@@ -17,7 +15,7 @@ const LEVELS = {
   toxic: [
     ["톡", "살짝 솔직하게. 웃으며 넘길 수 있는 정도. 1문장."],
     ["퍽", "돌려 말한 부분을 걷어내고 진짜 뜻만 직설적으로. 1문장."],
-    ["뻑!", "정곡을 찌르는 한 방. 가장 짧고 세게, 과장된 유머 OK. 15자 안팎."]
+    ["뻑!", "핵심 한 마디만. 5~12자. 감사·죄송·참고 같은 예의 표현은 전부 지우고, 말 뒤에 숨은 진짜 뜻을 그대로 드러낸다. 가장 짧고 세게."]
   ]
 };
 
@@ -68,6 +66,16 @@ const TOXIC_RULES = `너는 '목침 뻑치기' — 쿠션어 번역기의 반대
 - 퍽: 나 많이 서운했어.
 - 뻑!: 서운해. 엄청.
 
+예시 (원문: "좋은 의견 감사합니다. 참고하겠습니다.")
+- 톡: 의견은 잘 들었어요.
+- 퍽: 참고만 할게요. 반영은 글쎄요.
+- 뻑!: 안 쓸 거예요.
+
+예시 (원문: "검토해보고 다시 연락드릴게요.")
+- 톡: 생각 좀 해볼게요. 기대는 마세요.
+- 퍽: 지금은 할 생각 없어요.
+- 뻑!: 안 해요.
+
 출력은 JSON만: {"text":"바꾼 문장"}`;
 
 function cors(origin) {
@@ -117,7 +125,7 @@ export default {
     const key = String(env.OPENAI_API_KEY || "").trim();
     if (!key) return reply({ error: "no_key" }, 500, origin);
 
-    const model = TEST_MODELS.includes(body.model) ? body.model : MODEL;
+    const model = MODEL;
     const callAI = (withTemp) => fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
@@ -149,7 +157,7 @@ export default {
         : String(parsed.results?.[0]?.text || "").trim();
       const results = text ? [{ text }] : [];
       if (!results.length) return reply({ error: "invalid_json" }, 502, origin);
-      return reply({ results, model, usage: data.usage || null }, 200, origin);
+      return reply({ results }, 200, origin);
     } catch {
       return reply({ error: "invalid_json" }, 502, origin);
     }
