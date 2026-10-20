@@ -10,7 +10,7 @@
   <style>
 *{box-sizing:border-box}
 body{margin:0}
-/* Layout: one soft column, phone-first; a tufted cushion mark that hardens in 톡식 mode */
+/* Layout: one soft column, phone-first; a tufted cushion mark that turns into a wooden 목침 block in 목침 mode */
 :root {
   --bg: #F5F0F4;
   --surface: #FFFFFF;
@@ -26,8 +26,8 @@ body{margin:0}
   --font-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 }
 :root[data-mode="toxic"] {
-  --accent: #D9432B;
-  --accent-soft: #FADDD6;
+  --accent: #9A5B2E;
+  --accent-soft: #F1E1D2;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -35,14 +35,14 @@ body{margin:0}
     --line: #3A3040; --accent: #EC86A6; --accent-ink: #1B161E; --accent-soft: #452935; --ad: #2B2530;
     color-scheme: dark;
   }
-  :root:not([data-theme="light"])[data-mode="toxic"] { --accent: #F06A50; --accent-soft: #48261F; }
+  :root:not([data-theme="light"])[data-mode="toxic"] { --accent: #D39462; --accent-soft: #3E2A1D; }
 }
 :root[data-theme="dark"] {
   --bg: #1B161E; --surface: #261F2A; --sunken: #201A23; --ink: #F2EAF2; --muted: #A898AD;
   --line: #3A3040; --accent: #EC86A6; --accent-ink: #1B161E; --accent-soft: #452935; --ad: #2B2530;
   color-scheme: dark;
 }
-:root[data-theme="dark"][data-mode="toxic"] { --accent: #F06A50; --accent-soft: #48261F; }
+:root[data-theme="dark"][data-mode="toxic"] { --accent: #D39462; --accent-soft: #3E2A1D; }
 
 body {
   background: var(--bg); color: var(--ink);
@@ -68,7 +68,8 @@ header { display: flex; align-items: center; gap: 14px; }
   margin: -4px 0 0 -4px; border-radius: 50%; background: rgba(0,0,0,.18);
   box-shadow: 0 0 0 4px rgba(255,255,255,.18);
 }
-:root[data-mode="toxic"] .cushion { border-radius: 10%; transform: rotate(45deg) scale(.86); }
+:root[data-mode="toxic"] .cushion { border-radius: 8px; transform: scaleY(.62); }
+:root[data-mode="toxic"] .cushion::after { width: 30px; height: 4px; margin: -2px 0 0 -15px; border-radius: 2px; box-shadow: none; }
 h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; line-height: 1.15; margin: 0; text-wrap: balance; }
 .tag { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
 
@@ -147,14 +148,14 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
   <header>
     <div class="cushion" aria-hidden="true"></div>
     <div>
-      <h1>쿠션어 번역기</h1>
+      <h1 id="title">쿠션어 번역기</h1>
       <p class="tag" id="tagline">하고 싶은 말은 그대로, 말투만 푹신하게</p>
     </div>
   </header>
 
   <div class="modes" role="group" aria-label="번역 모드">
     <button type="button" id="mode-cushion" aria-pressed="true">쿠션 모드</button>
-    <button type="button" id="mode-toxic" aria-pressed="false">톡식 모드</button>
+    <button type="button" id="mode-toxic" aria-pressed="false">목침 모드</button>
   </div>
 
   <form class="panel" id="form">
@@ -247,6 +248,7 @@ function setMode(m) {
   $("mode-cushion").setAttribute("aria-pressed", String(m === "cushion"));
   $("mode-toxic").setAttribute("aria-pressed", String(m === "toxic"));
   const toxic = m === "toxic";
+  $("title").textContent = toxic ? "목침 뻑치기" : "쿠션어 번역기";
   $("tagline").textContent = toxic ? "돌려 말한 그 말, 속마음은 이거예요" : "하고 싶은 말은 그대로, 말투만 푹신하게";
   $("input-label").textContent = toxic ? "번역할 쿠션어 (받은 메시지를 붙여넣어 보세요)" : "하고 싶은 말 (직설적으로 써도 돼요)";
   $("target-wrap").hidden = toxic;
@@ -257,8 +259,8 @@ function setMode(m) {
   if (showingExample) {
     $("input").value = EXAMPLE_INPUT[m];
     updateCount();
-    renderResult(toxic ? EXAMPLE_TOXIC : EXAMPLE, true);
   }
+  renderResult(toxic ? EXAMPLE_TOXIC : EXAMPLE, true);
 }
 
 function updateCount() {
