@@ -3,7 +3,9 @@
 // - 이 파일은 GitHub Pages에서 쓰이지 않는다. Cloudflare Worker 편집기에 붙여넣는 용도.
 
 const ALLOWED_ORIGIN = "https://ddanny7112.github.io";
-const MODEL = "gpt-4o-mini"; // 가볍고 저렴한 모델. 필요하면 바꿀 수 있음.
+const MODEL = "gpt-4o-mini"; // 기본 모델
+// 비교 테스트용: 화면에서 이 목록 안의 모델만 골라 쓸 수 있다. 테스트가 끝나면 하나만 남긴다.
+const TEST_MODELS = ["gpt-4o-mini", "gpt-6-luna", "gpt-6.1-sol"];
 
 const TARGETS = ["상사", "동료", "친구", "고객", "연인", "가족"];
 const LEVELS = {
@@ -115,16 +117,23 @@ export default {
     const key = String(env.OPENAI_API_KEY || "").trim();
     if (!key) return reply({ error: "no_key" }, 500, origin);
 
-    const ai = await fetch("https://api.openai.com/v1/chat/completions", {
+    const model = TEST_MODELS.includes(body.model) ? body.model : MODEL;
+    const callAI = (withTemp) => fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: MODEL,
-        temperature: mode === "toxic" ? 0.9 : 0.7,
+        model,
+        ...(withTemp ? { temperature: mode === "toxic" ? 0.9 : 0.7 } : {}),
         response_format: { type: "json_object" },
         messages: buildMessages(mode, target, level, text)
       })
     });
+    let ai = await callAI(true);
+    // 일부 최신 모델은 temperature 설정을 받지 않는다. 그럴 땐 빼고 한 번 더 시도.
+    if (ai.status === 400) {
+      const t = await ai.clone().text();
+      if (/temperature/i.test(t)) ai = await callAI(false);
+    }
     if (!ai.ok) {
       // OpenAI가 거절한 이유(코드만)를 함께 돌려준다. 키 값은 절대 포함하지 않는다.
       let code = "";
@@ -140,7 +149,7 @@ export default {
         : String(parsed.results?.[0]?.text || "").trim();
       const results = text ? [{ text }] : [];
       if (!results.length) return reply({ error: "invalid_json" }, 502, origin);
-      return reply({ results }, 200, origin);
+      return reply({ results, model, usage: data.usage || null }, 200, origin);
     } catch {
       return reply({ error: "invalid_json" }, 502, origin);
     }
