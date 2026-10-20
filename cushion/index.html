@@ -12,16 +12,16 @@
 body{margin:0}
 /* Layout: one soft column, phone-first; a tufted cushion mark that turns into a wooden 목침 block in 목침 mode */
 :root {
-  --bg: #F5F0F4;
+  --bg: #F4F2EE;
   --surface: #FFFFFF;
-  --sunken: #EFE7EE;
-  --ink: #2A2130;
-  --muted: #76687C;
-  --line: #E3D8E2;
-  --accent: #D9668A;
+  --sunken: #ECE9E4;
+  --ink: #24221F;
+  --muted: #6E6962;
+  --line: #DEDAD3;
+  --accent: #3A94CF;
   --accent-ink: #FFFFFF;
-  --accent-soft: #F8DCE6;
-  --ad: #EDEAF0;
+  --accent-soft: #DCEEFA;
+  --ad: #ECE9E4;
   --font-display: "Jua", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --font-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 }
@@ -31,15 +31,15 @@ body{margin:0}
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #1B161E; --surface: #261F2A; --sunken: #201A23; --ink: #F2EAF2; --muted: #A898AD;
-    --line: #3A3040; --accent: #EC86A6; --accent-ink: #1B161E; --accent-soft: #452935; --ad: #2B2530;
+    --bg: #1A1917; --surface: #252320; --sunken: #1F1D1A; --ink: #F2EFEA; --muted: #A39D95;
+    --line: #37332E; --accent: #6CB8EA; --accent-ink: #10202B; --accent-soft: #1E3444; --ad: #2A2724;
     color-scheme: dark;
   }
   :root:not([data-theme="light"])[data-mode="toxic"] { --accent: #D39462; --accent-soft: #3E2A1D; }
 }
 :root[data-theme="dark"] {
-  --bg: #1B161E; --surface: #261F2A; --sunken: #201A23; --ink: #F2EAF2; --muted: #A898AD;
-  --line: #3A3040; --accent: #EC86A6; --accent-ink: #1B161E; --accent-soft: #452935; --ad: #2B2530;
+  --bg: #1A1917; --surface: #252320; --sunken: #1F1D1A; --ink: #F2EFEA; --muted: #A39D95;
+  --line: #37332E; --accent: #6CB8EA; --accent-ink: #10202B; --accent-soft: #1E3444; --ad: #2A2724;
   color-scheme: dark;
 }
 :root[data-theme="dark"][data-mode="toxic"] { --accent: #D39462; --accent-soft: #3E2A1D; }
