@@ -55,15 +55,7 @@ body {
   padding-block: 28px 48px;
 }
 .wrap { min-width: 0; display: flex; flex-direction: column; gap: 20px; }
-.ad-rail { display: none; }
-@media (min-width: 1000px) {
-  .page { grid-template-columns: 160px minmax(0, 560px) 160px; }
-  .ad-rail {
-    display: flex; position: sticky; top: 24px; align-self: start;
-    height: 600px; flex-direction: column; justify-content: center;
-  }
-  .ad-mobile { display: none; }
-}
+
 header { display: flex; align-items: center; gap: 14px; }
 .cushion {
   width: 56px; height: 56px; flex: none; position: relative;
@@ -151,7 +143,6 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
 </head>
 <body>
 <div class="page">
-<aside class="ad ad-rail" aria-label="광고 영역 예시 (왼쪽)"><b>광고</b>160×600</aside>
 <main class="wrap">
   <header>
     <div class="cushion" aria-hidden="true"></div>
@@ -194,15 +185,14 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       <span class="badge" id="res-badge">예시 결과</span>
     </div>
     <div id="cards"></div>
-    <div class="ad ad-mobile" aria-label="광고 영역 예시">
+    <div class="ad" aria-label="광고 영역 예시">
       <b>광고</b>
-      휴대폰 화면용 배너 자리
+      결과 아래 배너 자리
     </div>
   </section>
 
   <footer>쿠션어 번역기 · pause-keyring</footer>
 </main>
-<aside class="ad ad-rail" aria-label="광고 영역 예시 (오른쪽)"><b>광고</b>160×600</aside>
 </div>
 
 <script>
