@@ -48,12 +48,21 @@ body {
   background: var(--bg); color: var(--ink);
   font-family: var(--font-body); font-size: 16px; line-height: 1.6;
 }
-.wrap {
-  max-width: 560px; margin: 0 auto;
+.page {
+  display: grid; grid-template-columns: minmax(0, 560px); justify-content: center; gap: 32px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 28px 48px;
-  display: flex; flex-direction: column; gap: 20px;
+}
+.wrap { min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.ad-rail { display: none; }
+@media (min-width: 1000px) {
+  .page { grid-template-columns: 160px minmax(0, 560px) 160px; }
+  .ad-rail {
+    display: flex; position: sticky; top: 24px; align-self: start;
+    height: 600px; flex-direction: column; justify-content: center;
+  }
+  .ad-mobile { display: none; }
 }
 header { display: flex; align-items: center; gap: 14px; }
 .cushion {
@@ -123,8 +132,9 @@ button:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent); ou
 .res-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 20px; margin: 0; }
 .badge { font-size: 12px; color: var(--muted); background: var(--sunken); border-radius: 999px; padding: 2px 10px; }
 .card { background: var(--surface); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.card { padding: 18px 20px; gap: 12px; border: 1.5px solid var(--accent-soft); }
 .card .k { font-family: var(--font-display); font-size: 15px; color: var(--accent); }
-.card p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.card p { margin: 0; font-size: 18px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
 .card .copy {
   align-self: flex-end; font: inherit; font-size: 13px; color: var(--ink);
   background: var(--sunken); border: 0; border-radius: 999px; padding: 5px 14px; cursor: pointer;
@@ -140,7 +150,9 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="page">
+<aside class="ad ad-rail" aria-label="광고 영역 예시 (왼쪽)"><b>광고</b>160×600</aside>
+<main class="wrap">
   <header>
     <div class="cushion" aria-hidden="true"></div>
     <div>
@@ -181,14 +193,16 @@ footer { font-size: 12px; color: var(--muted); text-align: center; }
       <h2 id="res-title">이렇게 말해보세요</h2>
       <span class="badge" id="res-badge">예시 결과</span>
     </div>
-    <div id="cards" class="results"></div>
-    <div class="ad" aria-label="광고 영역 예시">
-      <b>광고 영역</b>
-      변환 결과 아래 배너 자리 (애드센스·애드핏 예정)
+    <div id="cards"></div>
+    <div class="ad ad-mobile" aria-label="광고 영역 예시">
+      <b>광고</b>
+      휴대폰 화면용 배너 자리
     </div>
   </section>
 
   <footer>쿠션어 번역기 · pause-keyring</footer>
+</main>
+<aside class="ad ad-rail" aria-label="광고 영역 예시 (오른쪽)"><b>광고</b>160×600</aside>
 </div>
 
 <script>
@@ -204,17 +218,9 @@ const SAMPLES = {
   cushion: ["내일까지 보고서 다시 해오세요. 이번 건 너무 엉성해요.", "그 약속 못 가. 귀찮아.", "환불 안 됩니다. 규정 읽어보세요.", "왜 아직도 답장 안 해?"],
   toxic: ["검토해보고 다시 연락드리겠습니다.", "좋은 의견 감사합니다. 참고하겠습니다.", "다음에 밥 한번 먹자!", "확인 부탁드립니다~"]
 };
-const EXAMPLE = [
-  { label: "정중형", text: "보고서 확인했어요. 전체적인 방향은 좋은데, 몇 군데만 보완하면 훨씬 탄탄해질 것 같아요. 혹시 내일까지 한 번 더 다듬어주실 수 있을까요?" },
-  { label: "다정형", text: "고생 많으셨어요! 읽어보니 조금만 더 채우면 완성도가 확 올라갈 것 같아서요. 바쁘시겠지만 내일까지 한 번만 더 봐주시면 정말 감사하겠습니다." },
-  { label: "깔끔형", text: "보고서 잘 받았습니다. 보완이 필요한 부분이 있어 내일까지 수정본 부탁드려도 될까요? 필요하면 같이 봐드릴게요." }
-];
+const EXAMPLE = "보고서 확인했어요. 전체적인 방향은 좋은데, 몇 군데만 보완하면 훨씬 탄탄해질 것 같아요. 혹시 내일까지 한 번 더 다듬어주실 수 있을까요?";
 
-const EXAMPLE_TOXIC = [
-  { label: "현실형", text: "지금은 안 할 거고, 먼저 연락할 생각도 별로 없어요." },
-  { label: "팩폭형", text: "솔직히 관심 없는데 거절하기 애매해서 시간 버는 중이에요." },
-  { label: "한줄요약", text: "안 함." }
-];
+const EXAMPLE_TOXIC = "솔직히 관심 없는데 거절하기 애매해서 시간 버는 중이에요.";
 const EXAMPLE_INPUT = { cushion: SAMPLES.cushion[0], toxic: SAMPLES.toxic[0] };
 
 let mode = "cushion", target = "동료", level = 1, busy = false, showingExample = true;
@@ -261,7 +267,7 @@ function setMode(m) {
   if (showingExample) {
     $("input").value = EXAMPLE_INPUT[m];
     updateCount();
-    renderResults(toxic ? EXAMPLE_TOXIC : EXAMPLE, true);
+    renderResult(toxic ? EXAMPLE_TOXIC : EXAMPLE, true);
   }
 }
 
@@ -281,17 +287,16 @@ async function copyText(text, btn) {
   setTimeout(() => { btn.textContent = "복사"; }, 1800);
 }
 
-function renderResults(list, isExample) {
+function renderResult(text, isExample, lv = level) {
   const c = $("cards"); c.textContent = "";
   $("res-badge").textContent = isExample ? "예시 결과" : "AI 변환 결과";
-  for (const r of list) {
-    const card = document.createElement("article"); card.className = "card";
-    const k = document.createElement("span"); k.className = "k"; k.textContent = r.label || "버전";
-    const p = document.createElement("p"); p.textContent = r.text;
-    const b = document.createElement("button"); b.type = "button"; b.className = "copy"; b.textContent = "복사";
-    b.onclick = () => copyText(r.text, b);
-    card.append(k, p, b); c.append(card);
-  }
+  const card = document.createElement("article"); card.className = "card";
+  const k = document.createElement("span"); k.className = "k";
+  k.textContent = (mode === "toxic" ? "맵기 · " : "두께 · ") + LEVELS[mode][lv][0];
+  const p = document.createElement("p"); p.textContent = text;
+  const b = document.createElement("button"); b.type = "button"; b.className = "copy"; b.textContent = "복사";
+  b.onclick = () => copyText(text, b);
+  card.append(k, p, b); c.append(card);
 }
 
 const ERR = {
@@ -312,6 +317,7 @@ $("form").addEventListener("submit", async (e) => {
   const text = $("input").value.trim();
   if (!text) { $("status").textContent = "변환할 문장을 먼저 입력해주세요."; return; }
   busy = true; $("go").disabled = true;
+  const askedLevel = level;
   $("status").textContent = mode === "toxic" ? "속마음 읽는 중…" : "쿠션 씌우는 중…";
   try {
     const res = await fetch(API_URL, {
@@ -327,7 +333,7 @@ $("form").addEventListener("submit", async (e) => {
     const list = Array.isArray(out?.results) ? out.results.filter(r => r && typeof r.text === "string" && r.text.trim()) : [];
     if (!list.length) throw { code: "invalid_json" };
     showingExample = false;
-    renderResults(list.slice(0, 3).map(r => ({ label: String(r.label || "버전"), text: r.text.trim() })), false);
+    renderResult(list[0].text.trim(), false, askedLevel);
     $("status").textContent = "";
   } catch (err) {
     $("status").textContent = ERR[err?.code] || "잠시 연결이 불안정했어요. 다시 눌러주세요.";
