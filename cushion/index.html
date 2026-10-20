@@ -250,7 +250,7 @@ function setMode(m) {
   const toxic = m === "toxic";
   $("title").textContent = toxic ? "목침 뻑치기" : "쿠션어 번역기";
   $("tagline").textContent = toxic ? "돌려 말한 그 말, 속마음은 이거예요" : "하고 싶은 말은 그대로, 말투만 푹신하게";
-  $("input-label").textContent = toxic ? "번역할 쿠션어 (받은 메시지를 붙여넣어 보세요)" : "하고 싶은 말 (직설적으로 써도 돼요)";
+  $("input-label").textContent = toxic ? "하고 싶은 말" : "하고 싶은 말 (직설적으로 써도 돼요)";
   $("target-wrap").hidden = toxic;
   $("level-label").textContent = toxic ? "세기" : "쿠션 두께";
   $("go").textContent = toxic ? "속마음 번역" : "쿠션 씌우기";
