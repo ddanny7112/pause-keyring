@@ -207,11 +207,11 @@ const LEVELS = {
 };
 const SAMPLES = {
   cushion: ["내일까지 보고서 다시 해오세요. 이번 건 너무 엉성해요.", "그 약속 못 가. 귀찮아.", "환불 안 됩니다. 규정 읽어보세요.", "왜 아직도 답장 안 해?"],
-  toxic: ["검토해보고 다시 연락드리겠습니다.", "좋은 의견 감사합니다. 참고하겠습니다.", "다음에 밥 한번 먹자!", "확인 부탁드립니다~"]
+  toxic: ["혹시 시간 괜찮으시면 이 자료 한 번만 봐주실 수 있을까요?", "제가 요즘 일이 좀 많아서 이번 건은 어려울 것 같아요.", "괜찮아, 나 하나도 안 서운해~", "시간 되실 때 답장 주시면 감사하겠습니다."]
 };
 const EXAMPLE = "보고서 확인했어요. 전체적인 방향은 좋은데, 몇 군데만 보완하면 훨씬 탄탄해질 것 같아요. 혹시 내일까지 한 번 더 다듬어주실 수 있을까요?";
 
-const EXAMPLE_TOXIC = "솔직히 관심 없는데 거절하기 애매해서 시간 버는 중이에요.";
+const EXAMPLE_TOXIC = "오늘 안에 이 자료 봐주세요.";
 const EXAMPLE_INPUT = { cushion: SAMPLES.cushion[0], toxic: SAMPLES.toxic[0] };
 
 let mode = "cushion", target = "동료", level = 1, busy = false, showingExample = true;
@@ -249,12 +249,12 @@ function setMode(m) {
   $("mode-toxic").setAttribute("aria-pressed", String(m === "toxic"));
   const toxic = m === "toxic";
   $("title").textContent = toxic ? "목침 뻑치기" : "쿠션어 번역기";
-  $("tagline").textContent = toxic ? "돌려 말한 그 말, 속마음은 이거예요" : "하고 싶은 말은 그대로, 말투만 푹신하게";
+  $("tagline").textContent = toxic ? "돌려 말하지 말고, 한 방에" : "하고 싶은 말은 그대로, 말투만 푹신하게";
   $("input-label").textContent = toxic ? "하고 싶은 말" : "하고 싶은 말 (직설적으로 써도 돼요)";
   $("target-wrap").hidden = toxic;
   $("level-label").textContent = toxic ? "세기" : "쿠션 두께";
-  $("go").textContent = toxic ? "속마음 번역" : "쿠션 씌우기";
-  $("res-title").textContent = toxic ? "속마음은 이래요" : "이렇게 말해보세요";
+  $("go").textContent = toxic ? "목침 뻑치기" : "쿠션 씌우기";
+  $("res-title").textContent = toxic ? "시원하게 말하면" : "이렇게 말해보세요";
   renderChips();
   if (showingExample) {
     $("input").value = EXAMPLE_INPUT[m];
@@ -310,7 +310,7 @@ $("form").addEventListener("submit", async (e) => {
   if (!text) { $("status").textContent = "변환할 문장을 먼저 입력해주세요."; return; }
   busy = true; $("go").disabled = true;
   const askedLevel = level;
-  $("status").textContent = mode === "toxic" ? "속마음 읽는 중…" : "쿠션 씌우는 중…";
+  $("status").textContent = mode === "toxic" ? "목침 드는 중…" : "쿠션 씌우는 중…";
   try {
     const res = await fetch(API_URL, {
       method: "POST",
